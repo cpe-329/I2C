@@ -13,8 +13,8 @@
 
 //#include "adc.h"
 //#include "button.h"
-//#include "delay.h"
-//#include "led.h"
+#include "delay.h"
+#include "led.h"
 #include "my_msp.h"
 //#include "scope_data.h"
 //#include "scope_term.h"

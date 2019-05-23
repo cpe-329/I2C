@@ -32,12 +32,12 @@ inline void init(const unsigned int freq) {
     led_init();
     rgb_init();
 
-    button_init();
+    // button_init();
 
-    timer_init();
+    // timer_init();
 
     // dac_init();
-    adc_init();
+    // adc_init();
     uart_init();
 
     // lcd_init();

@@ -19,7 +19,7 @@ inline void led_init(void) {
     P1->DIR |= LED1_PIN;    // Set P1.0 to output mode
     P1->OUT &= ~LED1_PIN;   //  Set LED1 state to off
 
-    test_leds();
+    // test_leds();
 }
 
 // Toggle LED1

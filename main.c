@@ -43,6 +43,8 @@ int main(void) {
 
     init(FREQ);
 
+    rgb_set(RGB_RED);
+
     P6->SEL0 |= I2C_PINS;  // I2C pins
 
     // Initialize data variable
@@ -76,6 +78,9 @@ int main(void) {
                     EUSCI_B_IE_NACKIE;  // |  // Enable NACK interrupt
     // EUSCI_B_IE_BCNTIE;   // Enable byte counter interrupt
 
+    delay_ms(500, FREQ);
+    rgb_clear(RGB_RED);
+
     while (1) {
 
         // // Don't wake up on exit from ISR
@@ -88,9 +93,11 @@ int main(void) {
         for (i = 2000; i > 0; i--) {
         }
 
+        rgb_set(RGB_GREEN);
         // Ensure stop condition got sent
         while (EUSCI_B3->CTLW0 & EUSCI_B_CTLW0_TXSTP) {
         }
+        rgb_clear(RGB_GREEN);
 
         // I2C start condition
         EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
@@ -103,6 +110,7 @@ int main(void) {
 
 // I2C interrupt service routine
 void EUSCIB3_IRQHandler(void) {
+    led_on();
     // If a NACK was received:
     if (EUSCI_B3->IFG & EUSCI_B_IFG_NACKIFG) {
         EUSCI_B3->IFG &= ~EUSCI_B_IFG_NACKIFG;
@@ -133,6 +141,9 @@ void EUSCIB3_IRQHandler(void) {
 
     // TX buffer has been cleared
     if (EUSCI_B3->IFG & EUSCI_B_IFG_TXIFG0) {
+
+        rgb_set(RGB_BLUE);
+
         EUSCI_B3->IFG &= ~EUSCI_B_IFG_TXIFG0;
 
         EUSCI_B3->TXBUF = TXData[TXDataPointer++];
@@ -144,8 +155,10 @@ void EUSCIB3_IRQHandler(void) {
             // I2C start condition
             EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTP;
         }
-    }
+        rgb_clear(RGB_BLUE);
 
+    }
+    led_off();
     // if (EUSCI_B3->IFG & EUSCI_B_IFG_BCNTIFG) {
     //     EUSCI_B3->IFG &= ~EUSCI_B_IFG_BCNTIFG;
     // }

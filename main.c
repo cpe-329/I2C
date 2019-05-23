@@ -27,8 +27,16 @@
 #define I2C_SDA_PIN P6_4
 #define I2C_PINS (I2C_SCL_PIN | I2C_SDA_PIN)
 
-uint8_t RXData[5] = {0};
-uint8_t RXDataPointer;
+#define I2C_SLACE_ADDR ((0b1010 << 4) | 0b000)
+
+#define I2C_TX_DATA_MAX_SIZE (4)
+
+volatile uint8_t RXData[5] = {0};
+volatile uint8_t RXDataPointer = 0;
+
+volatile uint8_t TXData[I2C_TX_DATA_MAX_SIZE] = {0};
+volatile uint8_t TXDataPointer = 0;
+volatile uint8_t TXDataSize = 0;
 
 int main(void) {
     volatile uint32_t i;
@@ -59,46 +67,53 @@ int main(void) {
                                // after EUSCI_B3->TBCNT is reached
 
     EUSCI_B3->BRW = 30;                       // baudrate = SMCLK / 30 = 100kHz
-    EUSCI_B3->TBCNT = 0x0005;                 // number of bytes to be received
-    EUSCI_B3->I2CSA = 0x0048;                 // Slave address
+    EUSCI_B3->TBCNT = 0x0;                    // number of bytes to be received
+    EUSCI_B3->I2CSA = I2C_SLACE_ADDR;         // Slave address
     EUSCI_B3->CTLW0 &= ~EUSCI_A_CTLW0_SWRST;  // Release eUSCI from reset
 
-    EUSCI_B3->IE |= EUSCI_A_IE_RXIE |    // Enable receive interrupt
-                    EUSCI_B_IE_NACKIE |  // Enable NACK interrupt
-                    EUSCI_B_IE_BCNTIE;   // Enable byte counter interrupt
+    EUSCI_B3->IE |= EUSCI_B_IE_RXIE |  // Enable receive interrupt
+                    EUSCI_B_IE_TXIE |
+                    EUSCI_B_IE_NACKIE;  // |  // Enable NACK interrupt
+    // EUSCI_B_IE_BCNTIE;   // Enable byte counter interrupt
 
     while (1) {
-        // Don't wake up on exit from ISR
-        SCB->SCR |= SCB_SCR_SLEEPONEXIT_Msk;
 
-        // Ensures SLEEPONEXIT takes effect immediately
-        __DSB();
+        // // Don't wake up on exit from ISR
+        // SCB->SCR |= SCB_SCR_SLEEPONEXIT_Msk;
+
+        // // Ensures SLEEPONEXIT takes effect immediately
+        // __DSB();
 
         // Arbitrary delay before transmitting the next byte
-        for (i = 2000; i > 0; i--)
-            ;
+        for (i = 2000; i > 0; i--) {
+        }
 
         // Ensure stop condition got sent
-        while (EUSCI_B3->CTLW0 & EUSCI_B_CTLW0_TXSTP)
-            ;
+        while (EUSCI_B3->CTLW0 & EUSCI_B_CTLW0_TXSTP) {
+        }
 
         // I2C start condition
         EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
 
-        // Go to LPM0
-        __sleep();
-        __no_operation();  // for debug
+        // // Go to LPM0
+        // __sleep();
+        // __no_operation();  // for debug
     }
 }
 
 // I2C interrupt service routine
 void EUSCIB3_IRQHandler(void) {
+    // If a NACK was received:
     if (EUSCI_B3->IFG & EUSCI_B_IFG_NACKIFG) {
         EUSCI_B3->IFG &= ~EUSCI_B_IFG_NACKIFG;
 
         // I2C start condition
         EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
+
+        //  Return to statrt state after receiving Nack,
+        // in repsonse to last expected byte
     }
+    // If data was received:
     if (EUSCI_B3->IFG & EUSCI_B_IFG_RXIFG0) {
         EUSCI_B3->IFG &= ~EUSCI_B_IFG_RXIFG0;
 
@@ -112,10 +127,26 @@ void EUSCIB3_IRQHandler(void) {
         // Wake up on exit from ISR
         SCB->SCR &= ~SCB_SCR_SLEEPONEXIT_Msk;
 
-        // Ensures SLEEPONEXIT takes effect immediately
-        __DSB();
+        // // Ensures SLEEPONEXIT takes effect immediately
+        // __DSB();
     }
-    if (EUSCI_B3->IFG & EUSCI_B_IFG_BCNTIFG) {
-        EUSCI_B3->IFG &= ~EUSCI_B_IFG_BCNTIFG;
+
+    // TX buffer has been cleared
+    if (EUSCI_B3->IFG & EUSCI_B_IFG_TXIFG0) {
+        EUSCI_B3->IFG &= ~EUSCI_B_IFG_TXIFG0;
+
+        EUSCI_B3->TXBUF = TXData[TXDataPointer++];
+
+        if (TXDataPointer >= TXDataSize |
+            TXDataPointer >= I2C_TX_DATA_MAX_SIZE) {
+            // Sent all the data, send Stop
+            TXDataPointer = 0;
+            // I2C start condition
+            EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTP;
+        }
     }
+
+    // if (EUSCI_B3->IFG & EUSCI_B_IFG_BCNTIFG) {
+    //     EUSCI_B3->IFG &= ~EUSCI_B_IFG_BCNTIFG;
+    // }
 }

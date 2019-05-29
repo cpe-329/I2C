@@ -196,7 +196,6 @@ inline void scope_switch_mode() {
 
 // Process latest value from ADC
 inline void scope_read_data() {
-    int reduced_precision = 0;
     unsigned int avg_val = 0;
     // Read in new data
     adc_log_reading();

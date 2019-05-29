@@ -35,8 +35,10 @@ unsigned char str_enter_addr[] = "Enter address: ";
 unsigned char str_addr[] = "Address: ";
 unsigned char str_enter_val[] = "Enter value: ";
 unsigned char str_val[] = "Value: ";
-unsigned char str_output_1[] = "Writing value ";
-unsigned char str_output_2[] = " to address ";
+unsigned char str_reading[] = "Reading value ";
+unsigned char str_writing[] = "Writing value ";
+unsigned char str_to_addr[] = " to address ";
+unsigned char str_fron_addr[] = "from address";
 
 volatile uint8_t RXData[5] = {0};
 volatile uint8_t RXDataPointer = 0;
@@ -51,9 +53,9 @@ volatile unsigned char char_data = '7';
 volatile bool got_fresh_char = false;
 
 int main(void) {
-    unsigned int addr;
-    unsigned int value;
-    volatile uint32_t i;
+    unsigned int addr = 0;
+    unsigned int value = 0;
+    volatile uint32_t i = 0;
 
     init(FREQ);
 
@@ -113,9 +115,9 @@ int main(void) {
         uart_write_nl();
 
         // Output data
-        uart_write_str(str_output_1, sizeof(str_output_1));
+        uart_write_str(str_writing, sizeof(str_writing));
         uart_write_int(value);
-        uart_write_str(str_output_2, sizeof(str_output_2));
+        uart_write_str(str_to_addr, sizeof(str_to_addr));
         uart_write_int(addr);
         uart_write_nl();
         uart_write_nl();
@@ -181,7 +183,6 @@ void EUSCIA0_IRQHandler(void) {
     }
 }
 
-
 // I2C interrupt service routine
 void EUSCIB3_IRQHandler(void) {
     led_on();
@@ -220,7 +221,6 @@ void EUSCIB3_IRQHandler(void) {
         EUSCI_B3->IFG &= ~EUSCI_B_IFG_TXIFG0;
 
         EUSCI_B3->TXBUF = TXData[TXDataPointer++];
-
 
         if (TXDataPointer >= TXDataSize |
             TXDataPointer >= I2C_TX_DATA_MAX_SIZE) {

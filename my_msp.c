@@ -10,16 +10,16 @@
 
 #include "msp.h"
 
-#include "adc.h"
+// #include "adc.h"
 #include "delay.h"
-#include "keypad.h"
-#include "lcd.h"
+// #include "keypad.h"
+// #include "lcd.h"
 #include "led.h"
 #include "my_msp.h"
-#include "spi.h"
-#include "timers.h"
+// #include "spi.h"
+// #include "timers.h"
 #include "uart.h"
-#include "button.h"
+// #include "button.h"
 
 inline void init(const unsigned int freq) {
     DISABLE_WATCHDOG

@@ -38,6 +38,8 @@ volatile uint8_t TXData[I2C_TX_DATA_MAX_SIZE] = {0};
 volatile uint8_t TXDataPointer = 0;
 volatile uint8_t TXDataSize = 0;
 
+uint16_t TransmitFlag = 0;
+
 int main(void) {
     volatile uint32_t i;
 
@@ -108,6 +110,24 @@ int main(void) {
     }
 }
 
+void Write(uint16_t addr, uint8_t data)
+{
+
+  // Set transmit mode (write)
+  EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TR;
+  // I2C start condition
+  EUSCI_B0->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
+
+  EUSCI_B0 -> TXBUF = addr>>8;    // Send the high byte of the memory address
+
+  EUSCI_B0 -> TXBUF = addr & 0xFF;    // Send the high byte of the memory address
+
+  EUSCI_B0 -> TXBUF = data;      // Send the byte to store in EEPROM
+
+  EUSCI_B0 -> CTLW0 |= EUSCI_B_CTLW0_TXSTP;   // I2C stop condition
+}
+
+
 // I2C interrupt service routine
 void EUSCIB3_IRQHandler(void) {
     led_on();
@@ -146,7 +166,12 @@ void EUSCIB3_IRQHandler(void) {
 
         EUSCI_B3->IFG &= ~EUSCI_B_IFG_TXIFG0;
 
+        EUSCI_B3 -> TXBUF = I2C_SLACE_ADDR>>8;    // Send the high byte of the memory address
+
+        EUSCI_B3 -> TXBUF = I2C_SLACE_ADDR & 0xFF;    // Send the low byte of the memory address
+
         EUSCI_B3->TXBUF = TXData[TXDataPointer++];
+
 
         if (TXDataPointer >= TXDataSize |
             TXDataPointer >= I2C_TX_DATA_MAX_SIZE) {

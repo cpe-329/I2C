@@ -45,6 +45,8 @@ volatile uint8_t TXData[I2C_TX_DATA_MAX_SIZE] = {0};
 volatile uint8_t TXDataPointer = 0;
 volatile uint8_t TXDataSize = 0;
 
+uint16_t Ack = 0;
+
 volatile unsigned char char_data = '7';
 volatile bool got_fresh_char = false;
 
@@ -179,6 +181,7 @@ void EUSCIA0_IRQHandler(void) {
     }
 }
 
+
 // I2C interrupt service routine
 void EUSCIB3_IRQHandler(void) {
     led_on();
@@ -217,6 +220,7 @@ void EUSCIB3_IRQHandler(void) {
         EUSCI_B3->IFG &= ~EUSCI_B_IFG_TXIFG0;
 
         EUSCI_B3->TXBUF = TXData[TXDataPointer++];
+
 
         if (TXDataPointer >= TXDataSize |
             TXDataPointer >= I2C_TX_DATA_MAX_SIZE) {

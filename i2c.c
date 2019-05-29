@@ -1,10 +1,15 @@
 /*
  * i2c.c
  *
- *  Created on: May 23, 2019
- *      Author: sfshaw
+ * Danica Fujiwara & Spencer Shaw
+ *
+ * CPE 329-17/18 Spring 2019
+ *
  */
-#include i2c.h
+
+#include <stdint.h>
+#include "msp.h"
+#include "i2c.h"
 
 void i2c_write(uint8_t addr, uint8_t data){
 

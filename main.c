@@ -119,7 +119,9 @@ int main(void) {
         uart_write_nl();
 
         // Read or Write to I2C Memory
+        rgb_set(RGB_GREEN);
 
+        rgb_clear(RGB_GREEN);
     }
 }
 

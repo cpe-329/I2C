@@ -19,6 +19,7 @@
 // #include "spi.h"
 // #include "timers.h"
 #include "uart.h"
+#include "i2c.h"
 // #include "button.h"
 
 inline void init(const unsigned int freq) {
@@ -39,6 +40,7 @@ inline void init(const unsigned int freq) {
     // dac_init();
     // adc_init();
     uart_init();
+    i2c_init();
 
     // lcd_init();
     // keypad_init();

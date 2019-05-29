@@ -5,14 +5,17 @@
  *
  * CPE 329-17/18 Spring 2019
  */
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "delay.h"
 #include "led.h"
 #include "msp.h"
 #include "my_msp.h"
+#include "scope_term.h"
 #include "uart.h"
+
+static unsigned char str_uart_welcome[] = "UART initialized\0";
 
 inline void uart_init() {
     // rgb_set(RGB_BLUE);
@@ -47,13 +50,9 @@ inline void uart_init() {
     // Enable global interrupt
     __enable_irq();
 
-    // uart_write('h');
-    // uart_write('e');
-    // uart_write('l');
-    // uart_write('l');
-    // uart_write('o');
-    // uart_write_nl();
-    // rgb_set(RGB_OFF);
+    term_clear_screen();
+    uart_write_str(str_uart_welcome, sizeof(str_uart_welcome));
+    uart_write_nl();
 }
 
 inline void uart_write(unsigned char c) {
@@ -64,7 +63,7 @@ inline void uart_write(unsigned char c) {
     }
 }
 
-void uart_write_string(unsigned char c[], unsigned int size) {
+void uart_write_str(unsigned char c[], unsigned int size) {
     int i;
     for (i = 0; i < size; i++) {
         uart_write(c[i]);
@@ -108,5 +107,5 @@ void uart_write_volts(unsigned int val_mv) {
     uart_write_int(val_mv % 100 / 10);
     uart_write_int(val_mv % 10);
     uart_write('V');
-    //uart_write_nl();
+    // uart_write_nl();
 }

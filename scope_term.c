@@ -16,46 +16,46 @@
 static unsigned char com[2] = {ESC, '['};
 
 inline void move_down(unsigned int val) {
-    uart_write_string(com, 2);
+    uart_write_str(com, 2);
     uart_write_int(val);
     uart_write('B');
 }
 
 inline void move_up(unsigned int val) {
-    uart_write_string(com, 2);
+    uart_write_str(com, 2);
     uart_write_int(val);
     uart_write('A');
 }
 
 inline void move_left(unsigned int val) {
-    uart_write_string(com, 2);
+    uart_write_str(com, 2);
     uart_write_int(val);
     uart_write('D');
 }
 
 inline void move_right(unsigned int val) {
-    uart_write_string(com, 2);
+    uart_write_str(com, 2);
     uart_write_int(val);
     uart_write('C');
 }
 
 inline void move_home() {
     unsigned char command[3] = {ESC, '[', 'H'};
-    uart_write_string(command, 3);
+    uart_write_str(command, 3);
 }
 
 inline void hide_cursor() {
-    unsigned char command[6] = {ESC, '[', '?','2', '5', 'l'};
-    uart_write_string(command, 6);
+    unsigned char command[6] = {ESC, '[', '?', '2', '5', 'l'};
+    uart_write_str(command, 6);
 }
 
 inline void term_clear_screen() {
     unsigned char command[4] = {ESC, '[', '2', 'J'};
-    uart_write_string(command, 4);
+    uart_write_str(command, 4);
 }
 
 void move_cursor(unsigned int x, unsigned int y) {
-    uart_write_string(com, 2);
+    uart_write_str(com, 2);
     uart_write_int(y);
     uart_write(';');
     uart_write_int(x);
@@ -63,9 +63,9 @@ void move_cursor(unsigned int x, unsigned int y) {
 }
 
 inline void draw_horizontal(unsigned int length,
-                     unsigned int x,
-                     unsigned int y,
-                     char c) {
+                            unsigned int x,
+                            unsigned int y,
+                            char c) {
     int i;
     move_cursor(x, y);
     for (i = 0; i < length; i++) {
@@ -74,10 +74,10 @@ inline void draw_horizontal(unsigned int length,
 }
 
 inline void draw_vertical(unsigned int length,
-                   unsigned int x,
-                   unsigned int y,
-                   char c,
-                   int bar) {
+                          unsigned int x,
+                          unsigned int y,
+                          char c,
+                          int bar) {
     int i;
 
     move_cursor(x, y);
@@ -108,50 +108,50 @@ void print_info_text() {
     int i, y = INFO_Y_CORD + 2;
     move_cursor(INFO_X_CORD, y);
     if (scope_get_mode() == SCOPE_MODE_AC) {
-        uart_write_string("  AC Mode", 9);
+        uart_write_str("  AC Mode", 9);
         y += 2;
         move_cursor(INFO_X_CORD, y);
-        uart_write_string("True RMS: ", 10);
+        uart_write_str("True RMS: ", 10);
         y += 2;
         move_cursor(INFO_X_CORD, y);
-        uart_write_string("AC Pkpk: ", 9);
+        uart_write_str("AC Pkpk: ", 9);
         y += 2;
         move_cursor(INFO_X_CORD, y);
-        uart_write_string("DC Offset: ", 11);
+        uart_write_str("DC Offset: ", 11);
         y += 2;
         move_cursor(INFO_X_CORD, y);
-        uart_write_string("AC Freq: ", 9);
+        uart_write_str("AC Freq: ", 9);
         y += 2;
         move_cursor(INFO_X_CORD, y);
-        uart_write_string("AC Period: ", 11);
-        move_cursor(HIST_TITLE_X+10, HIST_TITLE_Y);
-        uart_write_string("True RMS  ", 10);
+        uart_write_str("AC Period: ", 11);
+        move_cursor(HIST_TITLE_X + 10, HIST_TITLE_Y);
+        uart_write_str("True RMS  ", 10);
 
     } else {
-        uart_write_string("  DC Mode", 9);
+        uart_write_str("  DC Mode", 9);
         y += 2;
         move_cursor(INFO_X_CORD, y);
-        uart_write_string("DC Offset: ", 11);
+        uart_write_str("DC Offset: ", 11);
         move_cursor(HIST_TITLE_X + 10, HIST_TITLE_Y);
-        uart_write_string("DC Offset ", 10);
+        uart_write_str("DC Offset ", 10);
     }
     y += 2;
     move_cursor(INFO_X_CORD, y);
-    uart_write_string("Num Samples: ", 13);
+    uart_write_str("Num Samples: ", 13);
     y += 2;
     move_cursor(INFO_X_CORD, y);
-    uart_write_string("Sample Time: ", 14);
+    uart_write_str("Sample Time: ", 14);
     y += 2;
     move_cursor(INFO_X_CORD, y);
-    uart_write_string("Max Value: ", 11);
+    uart_write_str("Max Value: ", 11);
     y += 2;
     move_cursor(INFO_X_CORD, y);
-    uart_write_string("Min Value: ", 11);
+    uart_write_str("Min Value: ", 11);
     if (scope_get_mode() == SCOPE_MODE_DC) {
         for (i = 0; i < 4; i++) {
             y += 2;
             move_cursor(INFO_X_CORD, y);
-            uart_write_string("                   ", 19);
+            uart_write_str("                   ", 19);
         }
     }
 }
@@ -163,24 +163,24 @@ void print_info_values() {
         y += 2;
         move_cursor(INFO_X_CORD + 10, y);
         uart_write_volts(scope_get_true_rms());
-        uart_write_string("    ", 4);
+        uart_write_str("    ", 4);
         y += 2;
         move_cursor(INFO_X_CORD + 9, y);
         uart_write_volts(scope_get_ac_pkpk());
-        uart_write_string("    ", 4);
+        uart_write_str("    ", 4);
         y += 2;
         move_cursor(INFO_X_CORD + 11, y);
         uart_write_volts(scope_get_ac_dc_offset());
-        uart_write_string("      ", 6);
+        uart_write_str("      ", 6);
 
         y += 2;
         move_cursor(INFO_X_CORD + 9, y);
         uart_write_int(scope_get_ac_freq());
-        uart_write_string ("Hz      ",8);
+        uart_write_str("Hz      ", 8);
         y += 2;
         move_cursor(INFO_X_CORD + 11, y);
         uart_write_int(scope_get_ac_period());
-        uart_write_string("ms   ", 5);
+        uart_write_str("ms   ", 5);
 
     } else {
         y += 2;
@@ -190,46 +190,46 @@ void print_info_values() {
     y += 2;
     move_cursor(INFO_X_CORD + 13, y);
     uart_write_int(scope_get_num_samples());
-    uart_write_string("    ", 4);
-    y+=2;
-    move_cursor(INFO_X_CORD +14, y);
+    uart_write_str("    ", 4);
+    y += 2;
+    move_cursor(INFO_X_CORD + 14, y);
     uart_write_int(scope_get_histogram_div());
     if (scope_get_histogram_units() == 1) {
-           uart_write_string(" s", 2);
+        uart_write_str(" s", 2);
     } else {
-           uart_write_string("ms", 2);
+        uart_write_str("ms", 2);
     }
-    uart_write_string("    ", 4);
+    uart_write_str("    ", 4);
     y += 2;
-    move_cursor(INFO_X_CORD+11, y);
+    move_cursor(INFO_X_CORD + 11, y);
     uart_write_int(scope_get_max());
-    uart_write_string("    ", 4);
+    uart_write_str("    ", 4);
     y += 2;
-    move_cursor(INFO_X_CORD+11, y);
+    move_cursor(INFO_X_CORD + 11, y);
     uart_write_int(scope_get_min());
-    uart_write_string("    ", 4);
+    uart_write_str("    ", 4);
 }
 
 inline void print_graph_title() {
     move_cursor(HIST_TITLE_X, HIST_TITLE_Y);
-    uart_write_string("Histogram", 9);
+    uart_write_str("Histogram", 9);
     move_cursor(INFO_X_CORD, INFO_Y_CORD);
-    uart_write_string("Oscilloscope", 12);
+    uart_write_str("Oscilloscope", 12);
 }
 
 void print_time_divisions() {
     int times, time = 0, x = TIME_X_START;
     move_cursor(x, TIME_Y);
     if (scope_get_histogram_units() == 1) {
-        uart_write_string(" s", 2);
+        uart_write_str(" s", 2);
     } else {
-        uart_write_string("ms", 2);
+        uart_write_str("ms", 2);
     }
     x -= 5;
     for (times = 0; times < HISTOGRAM_SIZE; times++) {
         move_cursor(x, TIME_Y);
         uart_write_int(time);
-        uart_write_string("  ", 2);
+        uart_write_str("  ", 2);
         time += scope_get_histogram_div();
         x -= 5;
     }
@@ -257,11 +257,10 @@ void print_bar(unsigned int val, unsigned int x, unsigned int y) {
     if (val < VOLT_DIVISION) {
         draw_vertical(1, x, y, '-', BAR);
         draw_vertical(GRAPH_HEIGHT - 1, x, y - 1, ' ', BAR);
-    } else{
+    } else {
         draw_vertical(height, x, y, '|', BAR);
         draw_vertical(GRAPH_HEIGHT - height, x, y - height, ' ', BAR);
     }
-
 }
 
 inline void print_graph_border() {

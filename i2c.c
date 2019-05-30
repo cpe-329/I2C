@@ -147,14 +147,14 @@ void EUSCIB3_IRQHandler(void) {
         EUSCI_B3->TXBUF = TXData[TXDataPointer++];
 
         // All data has been sent
-        if (TXDataPointer >= TXDataSize |
-            TXDataPointer >= I2C_TX_DATA_MAX_SIZE) {
+        if (TXDataPointer >= I2C_TX_DATA_MAX_SIZE-1) {
             // Sent all the data, send Stop
             TXDataPointer = 0;
             // I2C start condition
             EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTP;
             finish_writing = 1;
         }
+        delay_ms_auto(50);
         rgb_clear(RGB_RED);
     }
     // if (EUSCI_B3->IFG & EUSCI_B_IFG_BCNTIFG) {

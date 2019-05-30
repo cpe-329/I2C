@@ -19,6 +19,7 @@ volatile uint8_t RXDataPointer = 0;
 volatile uint8_t TXData[I2C_TX_DATA_MAX_SIZE] = {0};
 volatile uint8_t TXDataPointer = 0;
 volatile uint8_t TXDataSize = 0;
+volatile uint8_t ready = 0;
 
 void i2c_init() {
     NVIC->ISER[0] = 1 << ((EUSCIB0_IRQn)&31);
@@ -68,24 +69,27 @@ void i2c_write(uint8_t addr, uint8_t data) {
     // I2C start condition
     EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
 
-    while (EUSCI_B3->CTLW0 & EUSCI_B_CTLW0_TXSTP) {
-    }
     EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTP;  // I2C stop condition
 }
+
 
 unsigned int i2c_read(uint8_t addr) {
     unsigned int data = 0;
 
+    RXData[0] = addr >> 8;
+    RXData[1] = addr & 0x0FF;
+    //First write the address of memory
     // write mode
     EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TR;
 
     // I2C start condition
     EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTT;
 
-    EUSCI_B3->TXBUF = addr >> 8;  // Address high byte
+    //wait til both parts of the address is sent;
+    while(ready < 2);
+    ready = 0;
 
-    EUSCI_B3->TXBUF = addr & 0x0FF;  // Address low byte
-
+    //Start reading
     // read mode
     EUSCI_B3->CTLW0 &= ~EUSCI_B_CTLW0_TR;
 
@@ -95,7 +99,6 @@ unsigned int i2c_read(uint8_t addr) {
     // stop
     EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTP;
 
-    data = EUSCI_B3->RXBUF;  // Read byte
 
     return data;
 }
@@ -116,6 +119,10 @@ void EUSCIB3_IRQHandler(void) {
     // If data was received:
     if (EUSCI_B3->IFG & EUSCI_B_IFG_RXIFG0) {
         EUSCI_B3->IFG &= ~EUSCI_B_IFG_RXIFG0;
+        if(RXDataPointer < 2){
+            EUSCI_B3->TXBUF = RXData[RXDataPointer++];
+            ready++;
+        }
 
         // Get RX data
         RXData[RXDataPointer++] = EUSCI_B3->RXBUF;
@@ -133,7 +140,7 @@ void EUSCIB3_IRQHandler(void) {
 
     // TX buffer has been cleared
     if (EUSCI_B3->IFG & EUSCI_B_IFG_TXIFG0) {
-        rgb_set(RGB_BLUE);
+        rgb_set(RGB_RED);
 
         EUSCI_B3->IFG &= ~EUSCI_B_IFG_TXIFG0;
 
@@ -146,8 +153,9 @@ void EUSCIB3_IRQHandler(void) {
             TXDataPointer = 0;
             // I2C start condition
             EUSCI_B3->CTLW0 |= EUSCI_B_CTLW0_TXSTP;
+            finish_writing = 1;
         }
-        rgb_clear(RGB_BLUE);
+        rgb_clear(RGB_RED);
     }
     // if (EUSCI_B3->IFG & EUSCI_B_IFG_BCNTIFG) {
     //     EUSCI_B3->IFG &= ~EUSCI_B_IFG_BCNTIFG;

@@ -20,6 +20,7 @@
 //#include "scope_term.h"
 //#include "timers.h"
 #include "uart.h"
+#include "i2c.h"
 
 #define FREQ FREQ_48_MHZ
 
@@ -32,15 +33,16 @@ unsigned char str_writing[] = "Writing value ";
 unsigned char str_to_addr[] = " to address ";
 unsigned char str_fron_addr[] = "from address";
 
-uint16_t Ack = 0;
 
 volatile unsigned char char_data = '7';
 volatile bool got_fresh_char = false;
+
 
 int main(void) {
     unsigned int addr = 0;
     unsigned int value = 0;
     volatile uint32_t i = 0;
+    finish_writing = 0;
 
     init(FREQ);
 
@@ -74,6 +76,9 @@ int main(void) {
         // Read or Write to I2C Memory
         rgb_set(RGB_GREEN);
         i2c_write(addr, value);
+        //Waits until all bytes are written
+        while(!finish_writing);
+        finish_writing = 0;
         rgb_clear(RGB_GREEN);
     }
 }
@@ -131,3 +136,5 @@ void EUSCIA0_IRQHandler(void) {
         led_off();
     }
 }
+
+
